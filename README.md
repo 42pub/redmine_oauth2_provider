@@ -9,4 +9,4 @@ Supported OAuth providers:
 
 - **Authorize**: http://my_redmine_host/oauth2/authorize_client
 - **Access Token**: http://my_redmine_host/oauth2/access_token
-- **User Information**: 
+- **User Information**: http://my_redmine_host/oauth2/user
