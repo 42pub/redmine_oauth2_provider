@@ -3,7 +3,7 @@
 With this plugin Redmine can use OAuth2 protocol for authentication. 
 Supported OAuth providers:
 
-* Gerrit
+* Gerrit (Use [Gerrit plugin](https://github.com/k-muramatsu/gerrit-oauth-provider) as OAuth2 Consumer)
 
 # URLs
 
