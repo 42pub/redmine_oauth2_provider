@@ -1,5 +1,5 @@
 class Oauth2Controller < ApplicationController 
-  before_filter :require_login, :except => []
+  before_filter :require_login, :except => [ :access_token, :access_user ]
   before_filter :require_admin, :only => [:register_app, :create_app, :del_client]
 
   def authorize_app
@@ -70,4 +70,23 @@ class Oauth2Controller < ApplicationController
     end
     redirect_to(@auth.redirect_uri,  :status => @auth.response_status)
   end
+
+  def access_token
+	@auth = Songkick::OAuth2::Model::Authorization.find_by_code(params[:code])
+	return halt 400 unless @auth
+	response = {
+		'access_token'  => @auth.access_token_hash,
+		'token_type'    => 'Bearer',
+		'expires_in'    => @auth.expires_at,
+		'refresh_token' => @auth.refresh_token_hash
+	}
+	render json: response
+  end
+
+  def access_user
+	@auth = Songkick::OAuth2::Model::Authorization.find_by_access_token_hash(params[:access_token])
+	@user = User.find_by_id(@auth.oauth2_resource_owner_id)
+	render json: @user
+  end
 end
+

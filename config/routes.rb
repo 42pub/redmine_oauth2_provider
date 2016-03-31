@@ -8,6 +8,8 @@ RedmineApp::Application.routes.draw do
     match '/clients', :controller => 'oauth2', :action => 'clients', :as =>'oauth2_clients', :via => [:get]
     match '/client/:id', :controller => 'oauth2', :action => 'del_client', :as =>'oauth2_client_delete', :via => [:delete]
     match '/allow_client', :controller => 'oauth2', :action => 'allow_client', :as => 'oauth2_allow_client', :via =>[:post]
+    match '/access_token', :controller => 'oauth2', :action => 'access_token', :as => 'access_token', :via =>[:post]
+    match '/user', :controller => 'oauth2', :action => 'access_user', :as => 'access_user', :via =>[:post, :get]
   end
   scope "user" do 
     match '/oauth_user_information', :controller => 'users', :action => 'oauth_get_user_information', :as => 'oauth_get_user_information', :via => [:get,:post]
