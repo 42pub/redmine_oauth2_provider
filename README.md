@@ -12,4 +12,4 @@ Supported OAuth providers:
 - **Access Token**: http://my_redmine_host/oauth2/access_token
 - **User Information**: http://my_redmine_host/oauth2/user
 
-For add new client: https://42team.org/oauth2/register_client
+For add new client: https://my_redmine_host/oauth2/register_client
