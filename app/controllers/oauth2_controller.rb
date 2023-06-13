@@ -1,11 +1,40 @@
 class Oauth2Controller < ApplicationController 
-  before_filter :require_login, :except => [ :access_token, :access_user ]
-  before_filter :require_admin, :only => [:register_app, :create_app, :del_client]
+  before_action :require_login, :except => [ :access_token, :access_user ]
+  before_action :require_admin, :only => [:register_app, :create_app, :del_client]
 
-  def authorize_app
+def authorize_app
+  # извлекаем все необходимые параметры из запроса
+  response_type = request.params['response_type']
+  client_id = request.params['client_id']
+  redirect_uri = request.params['redirect_uri']
+  scope = request.params['scope']
+  state = request.params['state']
+
+  # получаем текущего пользователя
+  user = User.current
+  raise "User not found" if user.nil?
+
+  # сохраняем параметры в переменную @oauth2
+  @oauth2 = { client_id: client_id, response_type: response_type, redirect_uri: redirect_uri, scope: scope, state: state, user_id: user.id }
+
+  # если response_type равен 'token' или 'code', это означает, что запросу нужно выполнить редирект
+  if @oauth2[:response_type] == 'token' || @oauth2[:response_type] == 'code'
+    redirect_to(@oauth2[:redirect_uri])
+  end
+
+  respond_to do |format|
+    format.html {}
+    format.api {}
+    format.atom {}
+  end
+end
+
+
+
+  def authorize_app2
     #http://localhost:3000/oauth2/authorize_client?response_type=token&client_id=js6w22mlf06cv4r4en6ka3ac6d4gm3y&redirect_uri=https://owncloud.reichmann-software.com
     @oauth2 = Songkick::OAuth2::Provider.parse(User.current, request.env)
-
+    
     if @oauth2.redirect?  
       redirect_to(@oauth2.redirect_uri, :status => @oauth2.response_status)
     end
@@ -61,15 +90,20 @@ class Oauth2Controller < ApplicationController
     redirect_to(oauth2_clients_path)
   end
 
-  def allow_client
-    @auth = Songkick::OAuth2::Provider::Authorization.new(User.current, params)
-    if params['allow'] == '1'
-      @auth.grant_access!
-    else
-      @auth.deny_access!
-    end
-    redirect_to(@auth.redirect_uri,  :status => @auth.response_status)
+def allow_client
+  @auth = Songkick::OAuth2::Provider::Authorization.new(User.current, params)
+  if @auth.nil? || @auth.redirect_uri.nil?
+    # обработка ошибки, например:
+    render json: { error: 'OAuth authorization failed' }, status: :internal_server_error
+    return
   end
+  if params['allow'] == '1'
+    @auth.grant_access!
+  else
+    @auth.deny_access!
+  end
+  redirect_to(@auth.redirect_uri,  :status => @auth.response_status)
+end
 
   def access_token
 	@auth = Songkick::OAuth2::Model::Authorization.find_by_code(params[:code])
